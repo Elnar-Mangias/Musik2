@@ -17,7 +17,7 @@ function getErrorMessage(data: unknown, status: number): string {
 
   return typeof data === 'string' && data
     ? data
-    : Ошибка сервера (${status});
+    : `Ошибка сервера (${status})`;
 }
 
 async function readResponse<T>(response: Response): Promise<T> {
@@ -44,7 +44,7 @@ async function authRequest(
   username: string,
   password: string
 ): Promise<TokenResponse> {
-  const response = await fetch(${API_BASE}${path}, {
+  const response = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -66,7 +66,7 @@ async function authRequest(
 
 // Обновление access token через refresh cookie
 async function refreshAccessToken(): Promise<string> {
-  const response = await fetch(${API_BASE}/token/refresh/, {
+  const response = await fetch(`${API_BASE}/token/refresh/`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -96,10 +96,10 @@ async function request<T>(
   headers.set('Content-Type', 'application/json');
 
   if (accessToken) {
-    headers.set('Authorization', Bearer ${accessToken});
+    headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
-  const response = await fetch(${API_BASE}${path}, {
+  const response = await fetch(`${API_BASE}${path}`, {
     ...options,
     credentials: 'include',
     headers,
