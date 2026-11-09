@@ -147,8 +147,11 @@ export const api = {
   getProfile: () => request<Profile>('/profile/'),
 
   updateProfile: (profile: Profile) =>
-    request<Profile>('/profile/', {
-      method: 'PATCH',
-      body: JSON.stringify(profile),
-    }),
+  request<Profile>('/profile/', {
+    method: 'PATCH',
+    body: JSON.stringify(profile),
+  }),
+
+getAccessToken: () => accessToken,
+
 };
