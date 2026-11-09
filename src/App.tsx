@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Chat from './Chat';
 import type { FormEvent } from 'react';
 import { ArrowUpRight, Disc3, Headphones, LoaderCircle, LogOut, Music2, UserRound, Waves } from 'lucide-react';
 import { api } from './api';
@@ -6,6 +7,7 @@ import type { Profile } from './api';
 type Mode = 'login' | 'register';
 type Notice = {kind:'success'|'error';text:string}|null;
 export default function App() {
+  const [showChat, setShowChat] = useState(false);
   const [mode,setMode]=useState<Mode>('login'),[username,setUsername]=useState(''),[password,setPassword]=useState('');
   const [profile,setProfile]=useState<Profile|null>(null),[profileDraft,setProfileDraft]=useState('');
   const [loading,setLoading]=useState(false),[notice,setNotice]=useState<Notice>(null);
@@ -13,11 +15,12 @@ export default function App() {
   useEffect(()=>{let alive=true;setLoading(true);api.getProfile().then(data=>{if(alive){setProfile(data);setProfileDraft(JSON.stringify(data,null,2));}}).catch(()=>{}).finally(()=>alive&&setLoading(false));return()=>{alive=false;}},[]);
   async function handleAuth(event:FormEvent){event.preventDefault();setLoading(true);setNotice(null);try{
     if(mode==='register'){await api.register(username.trim(),password);setNotice({kind:'success',text:'Аккаунт создан. Теперь войдите в систему.'});setMode('login');}
-    else{await api.login(username.trim(),password);const data=await api.getProfile();setProfile(data);setProfileDraft(JSON.stringify(data,null,2));setNotice({kind:'success',text:'Вы успешно вошли.'});}
+    else{await api.login(username.trim(),password);const data=await api.getProfile();setProfile(data);setProfileDraft(JSON.stringify(data,null,2));setNotice({kind:'success',text:'Вы успешно вошли.'}); setShowChat(true);}
     setPassword('');
   }catch(error){setNotice({kind:'error',text:error instanceof Error?error.message:'Не удалось выполнить запрос.'});}finally{setLoading(false);}}
-  async function handleLogout(){setLoading(true);setNotice(null);try{await api.logout();setProfile(null);setProfileDraft('');setNotice({kind:'success',text:'Вы вышли из аккаунта.'});}catch(error){setNotice({kind:'error',text:error instanceof Error?error.message:'Не удалось выйти.'});}finally{setLoading(false);}}
+  async function handleLogout(){setLoading(true);setNotice(null);try{await api.logout();setProfile(null);setShowChat(false);setProfileDraft('');setNotice({kind:'success',text:'Вы вышли из аккаунта.'});}catch(error){setNotice({kind:'error',text:error instanceof Error?error.message:'Не удалось выйти.'});}finally{setLoading(false);}}
   async function handleProfileSave(event:FormEvent){event.preventDefault();setLoading(true);setNotice(null);try{const draft=JSON.parse(profileDraft) as Profile;const updated=await api.updateProfile(draft);setProfile(updated);setProfileDraft(JSON.stringify(updated,null,2));setNotice({kind:'success',text:'Профиль обновлён.'});}catch(error){setNotice({kind:'error',text:error instanceof Error?error.message:'Не удалось сохранить профиль. Проверьте JSON.'});}finally{setLoading(false);}}
+  if (showChat) return <Chat onLogout={handleLogout} />;
   return <main className="site-shell">
     <nav className="topbar"><a className="brand" href="#home"><span className="brand-mark"><Waves size={19}/></span><span>NO SIGNAL<span className="brand-dot">.</span></span></a><div className="nav-links"><a href="#about">О группе</a><a href="#sound">Наш звук</a><a href="#account">Аккаунт</a></div><a className="nav-cta" href="#account">{isLoggedIn?'Профиль':'Войти'} <ArrowUpRight size={16}/></a></nav>
     <section className="hero" id="home"><div className="hero-grid"/><div className="hero-copy"><div className="eyebrow"><span className="live-dot"/> НЕЗАВИСИМАЯ МУЗЫКА · 2025</div><h1>СЛЫШЬ<br/><span>ТИШИНУ</span><i>?</i></h1><p className="hero-sub">Мы — NO SIGNAL. Музыка для тех, кто ищет свой собственный шум в мире бесконечных сигналов.</p><a href="#sound" className="primary-button">Погрузиться в звук <ArrowUpRight size={18}/></a><div className="hero-meta"><span>01 / 03</span><span className="meta-line"/><span>НАЙДИ СВОЮ ЧАСТОТУ</span></div></div><div className="hero-art"><div className="art-ring ring-one"/><div className="art-ring ring-two"/><div className="art-ring ring-three"/><div className="art-center"><Disc3 size={92} strokeWidth={.8}/></div><div className="art-label">NS—001<br/>NO SIGNAL<br/>SIDE A</div><div className="art-caption">VOL. 01 / STATIC DREAMS</div></div><div className="vertical-note">INDEPENDENT SOUND · EST. 2025</div></section>
